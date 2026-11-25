@@ -1,0 +1,97 @@
+def show(processes):
+    print("\nPID\tAT\tBT\tCT\tTAT\tWT")
+    total_wt = total_tat = 0
+    for p in processes:
+        tat = p['ct'] - p['at']
+        wt = tat - p['bt']
+        total_wt += wt
+        total_tat += tat
+        print(f"{p['pid']}\t{p['at']}\t{p['bt']}\t{p['ct']}\t{tat}\t{wt}")
+    print(f"Average Waiting Time     = {total_wt / len(processes):.2f}")
+    print(f"Average Turnaround Time = {total_tat / len(processes):.2f}")
+
+def fcfs(ps):
+    time = 0
+    for p in ps:
+        time = max(time, p['at']) + p['bt']
+        p['ct'] = time
+    show(ps)
+
+def sjf(ps):
+    time = completed = 0
+    done = set()
+    while completed < len(ps):
+        ready = [p for p in ps if p['pid'] not in done and p['at'] <= time]
+        if not ready:
+            time += 1
+            continue
+        p = min(ready, key=lambda p: p['bt'])
+        time += p['bt']
+        p['ct'] = time
+        done.add(p['pid'])
+        completed += 1
+    show(ps)
+
+def priority(ps):
+    time = completed = 0
+    done = set()
+    while completed < len(ps):
+        ready = [p for p in ps if p['pid'] not in done and p['at'] <= time]
+        if not ready:
+            time += 1
+            continue
+        p = min(ready, key=lambda p: p['pr'])
+        time += p['bt']
+        p['ct'] = time
+        done.add(p['pid'])
+        completed += 1
+    show(ps)
+
+def round_robin(ps, quantum):
+    time = completed = 0
+    rem = {p['pid']: p['bt'] for p in ps}
+    queue = []
+    in_queue = set()
+    while completed < len(ps):
+        for p in ps:
+            if p['at'] <= time and rem[p['pid']] > 0 and p['pid'] not in in_queue:
+                queue.append(p)
+                in_queue.add(p['pid'])
+        if not queue:
+            time += 1
+            continue
+        p = queue.pop(0)
+        in_queue.remove(p['pid'])
+        run = min(quantum, rem[p['pid']])
+        time += run
+        rem[p['pid']] -= run
+        for new in ps:
+            if new['at'] <= time and rem[new['pid']] > 0 and new['pid'] not in in_queue and new['pid'] != p:
+                queue.append(new)
+                in_queue.add(new['pid'])
+        if rem[p['pid']] > 0:
+            queue.append(p)
+            in_queue.add(p['pid'])
+        else:
+            p['ct'] = time
+            completed += 1
+    show(ps)
+
+n = int(input("Enter number of processes: "))
+processes = []
+for i in range(n):
+    at, bt, pr = map(int, input(f"Process {i + 1} - Arrival Time, Burst Time, Priority: ").split())
+    processes.append({'pid': i + 1, 'at': at, 'bt': bt, 'pr': pr})
+
+print("\nMenu:\n1. FCFS\n2. SJF (Non-preemptive)\n3. Priority (Non-preemptive)\n4. Round Robin")
+choice = int(input("Enter choice: "))
+if choice == 1:
+    fcfs([p.copy() for p in processes])
+elif choice == 2:
+    sjf([p.copy() for p in processes])
+elif choice == 3:
+    priority([p.copy() for p in processes])
+elif choice == 4:
+    round_robin([p.copy() for p in processes], int(input("Enter time quantum: ")))
+else:
+    print("Invalid choice")
