@@ -1,0 +1,23 @@
+import threading
+
+NUM_THREADS = 4
+n = 1000000
+chunk = n // NUM_THREADS
+results = [0] * NUM_THREADS
+
+def sum_array(i, start, end):
+    results[i] = sum(range(start, end))
+    print(f"Thread {i + 1}: sum[{start}..{end}) = {results[i]}")
+
+threads = []
+for i in range(NUM_THREADS):
+    start = i * chunk
+    end = n if i == NUM_THREADS - 1 else (i + 1) * chunk
+    t = threading.Thread(target=sum_array, args=(i, start, end))
+    threads.append(t)
+    t.start()
+
+for t in threads:
+    t.join()
+
+print(f"Total sum (0 to {n - 1}) computed using {NUM_THREADS} threads = {sum(results)}")
