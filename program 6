@@ -1,0 +1,30 @@
+import threading
+import time
+
+N = 5
+forks = [threading.Semaphore(1) for _ in range(N)]
+room = threading.Semaphore(N - 1)
+
+def philosopher(i):
+    left = i
+    right = (i + 1) % N
+    for _ in range(2):
+        print(f"Philosopher {i} is thinking")
+        time.sleep(0.1)
+        room.acquire()
+        forks[left].acquire()
+        forks[right].acquire()
+        print(f"Philosopher {i} is eating (fork {left} and fork {right})")
+        time.sleep(0.15)
+        forks[right].release()
+        forks[left].release()
+        room.release()
+        print(f"Philosopher {i} finished eating and put down forks")
+
+threads = []
+for i in range(N):
+    t = threading.Thread(target=philosopher, args=(i,))
+    threads.append(t)
+    t.start()
+for t in threads:
+    t.join()
