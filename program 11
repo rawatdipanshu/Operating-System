@@ -1,0 +1,55 @@
+MAXBLOCKS = 30
+
+def contiguous():
+    disk = [0] * MAXBLOCKS
+    nf = int(input("Enter number of files: "))
+    for f in range(nf):
+        start, length = map(int, input(f"File {f + 1} - starting block, length: ").split())
+        if start < 0 or length <= 0 or start + length > MAXBLOCKS or any(disk[i] for i in range(start, start + length)):
+            print("Allocation failed: blocks not free/out of range.")
+            continue
+        for i in range(start, start + length):
+            disk[i] = 1
+        print(f"File {f + 1} allocated blocks {start} to {start + length - 1}")
+
+def linked():
+    disk = [0] * MAXBLOCKS
+    nf = int(input("Enter number of files: "))
+    for f in range(nf):
+        length = int(input(f"File {f + 1} - number of blocks: "))
+        blocks = [i for i in range(MAXBLOCKS) if disk[i] == 0][:length]
+        for b in blocks:
+            disk[b] = 1
+        print(f"File {f + 1} allocated blocks: " + " -> ".join(map(str, blocks)) + " -> (NULL)")
+        if len(blocks) < length:
+            print("Warning: disk full, could not allocate all blocks.")
+
+def indexed():
+    disk = [0] * MAXBLOCKS
+    nf = int(input("Enter number of files: "))
+    for f in range(nf):
+        length = int(input(f"File {f + 1} - number of data blocks needed: "))
+        free = [i for i in range(MAXBLOCKS) if disk[i] == 0]
+        if len(free) < length + 1:
+            print("Allocation failed: not enough free blocks.")
+            continue
+        index_block = free[0]
+        data_blocks = free[1:length + 1]
+        disk[index_block] = 1
+        for b in data_blocks:
+            disk[b] = 1
+        print(f"File {f + 1} - Index block: {index_block}, Data blocks: " + " ".join(map(str, data_blocks)))
+
+print("Menu:\n1. Contiguous Allocation\n2. Linked Allocation\n3. Indexed Allocation")
+choice = int(input("Enter choice: "))
+if choice == 1:
+    print("\n--- Contiguous Allocation ---")
+    contiguous()
+elif choice == 2:
+    print("\n--- Linked Allocation ---")
+    linked()
+elif choice == 3:
+    print("\n--- Indexed Allocation ---")
+    indexed()
+else:
+    print("Invalid choice")
