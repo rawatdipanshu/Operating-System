@@ -1,0 +1,50 @@
+def distance(a, b):
+    return abs(a - b)
+
+def fcfs(requests, head):
+    total = 0
+    for r in requests:
+        total += distance(head, r)
+        head = r
+    print(f"FCFS   total head movement = {total}")
+
+def sstf(requests, head):
+    pending = requests[:]
+    total = 0
+    while pending:
+        r = min(pending, key=lambda x: distance(head, x))
+        total += distance(head, r)
+        head = r
+        pending.remove(r)
+    print(f"SSTF   total head movement = {total}")
+
+n = int(input("Enter number of requests: "))
+requests = list(map(int, input("Enter the requests: ").split()))
+head = int(input("Enter initial head position: "))
+disk_size = int(input("Enter disk size (max cylinder + 1): "))
+fcfs(requests, head)
+sstf(requests, head)
+
+def scan(requests, head, disk_size):
+    higher = sorted(r for r in requests if r >= head)
+    lower = sorted((r for r in requests if r < head), reverse=True)
+    path = higher + [disk_size - 1] + lower
+    total = 0
+    cur = head
+    for r in path:
+        total += distance(cur, r)
+        cur = r
+    print(f"SCAN   total head movement = {total}")
+
+def cscan(requests, head, disk_size):
+    higher = sorted(r for r in requests if r >= head)
+    lower = sorted(r for r in requests if r < head)
+    total = 0
+    cur = head
+    for r in higher + [disk_size - 1, 0] + lower:
+        total += distance(cur, r)
+        cur = r
+    print(f"C-SCAN total head movement = {total}")
+
+scan(requests, head, disk_size)
+cscan(requests, head, disk_size)
