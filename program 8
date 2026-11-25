@@ -1,0 +1,28 @@
+def allocate(blocks, processes, mode):
+    remaining = blocks[:]
+    result = [-1] * len(processes)
+    for i, size in enumerate(processes):
+        choices = [j for j, b in enumerate(remaining) if b >= size]
+        if not choices:
+            continue
+        if mode == "First Fit":
+            j = choices[0]
+        elif mode == "Best Fit":
+            j = min(choices, key=lambda x: remaining[x])
+        else:
+            j = max(choices, key=lambda x: remaining[x])
+        result[i] = j
+        remaining[j] -= size
+    print(f"\n--- {mode} ---")
+    print("Process No.\tProcess Size\tBlock No.")
+    for i, size in enumerate(processes):
+        block = f"B{result[i] + 1}" if result[i] != -1 else "Not Allocated"
+        print(f"P{i + 1}\t\t{size}\t\t{block}")
+
+bn = int(input("Enter number of memory blocks: "))
+blocks = list(map(int, input("Enter sizes of blocks: ").split()))
+pn = int(input("Enter number of processes: "))
+processes = list(map(int, input("Enter sizes of processes: ").split()))
+allocate(blocks, processes, "First Fit")
+allocate(blocks, processes, "Best Fit")
+allocate(blocks, processes, "Worst Fit")
